@@ -1,11 +1,13 @@
-# AutoTrader
+# AutoTrader 2026 Update
 
 AutoTrader is a Python script that lets 2 (or more 😳) **Android** phones automate trading in Pokémon GO by sending *taps* to the screen. The communication with the device is done with Android Debug Bridge (adb).
 
 ## Requirements
 
 - Two (or more) Android devices
-- PC with Python 3.10+ and Android Debug Bridge
+- PC with Python 3.12+
+- Python Poetry package installed for managing .venv and dependencies.
+- PC with Google Platform Tools (adb) added to PATH.
 - At least one USB cable to connect PC and devices
 - [Optional] Wifi on the same network as the PC
 
@@ -27,40 +29,20 @@ Start off by cloning or downloading the files in this repo.
 
 ### Setting up Python
 
-Install Python 3.10 or higher ([download page](https://www.python.org/downloads/)).
+1. Install Python 3.12 or higher ([download page](https://www.python.org/downloads/)).
 
-Move to this directory in your shell and install required packages with `pip install -r requirements.txt` (or set up a virtual environment first; see below).
+2. Install Poetry package using Python.  `pip install poetry`
 
-#### Using a venv (optional)
-
-Setting up a Python virtual environment (venv) before installing the dependencies is recommended on Linux,
-but also if you are using Python for many things on your system.
-
-If you use a venv, remember to do the activate step before running the `trade.py` script.
-
-The easiest way to get started:
-
-```powershell
-# Windows (cmd)
-python -m venv venv
-venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-```sh
-# Linux (bash/zsh)
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
-
-Refer to the [official documentation](https://docs.python.org/3/library/venv.html) for other options and more details.
+3. Move to project directory in your shell and install required packages with `poetry install`
 
 ### Setting up adb (Android Debug Bridge)
 
 Follow the instructions to download adb: <https://developer.android.com/studio/releases/platform-tools>
 
 Make sure that `adb` can be used from the command line. Simplest way is to add the `platform-tools` folder (unzipped) to `PATH`.
+
+*Recommended method for Windows users*: Install Google Platform Tools (adb) using WinGet (Windows Package Manager) this will automate the process of downloading tools and adding to `PATH`.
+   `winget install -e --id Google.PlatformTools`
 
 ### Connecting a phone
 
@@ -103,7 +85,7 @@ This means that phones with identical screen resolutions can probably use the sa
 This section covers how to create and upload that file.
 
 Make a copy of the file `ConfigTemplate.yaml` and call it whatever you like.
-In this example it will be called `MyPhone.yaml`.
+In this example it will be called `MyConfig.yaml`.
 Edit this file and replace the `[X, Y]` with the X and Y coordinates of the respective button.
 The coordinates only need to be *on* the button, they don't need to be precise at all.
 To find the coordinates, turn on the Pointer location tool (**Settings > Developer options > Pointer location**), enter a trade, and read the coordinates from the `X:` and `Y:` fields at the top while holding your finger on the desired button.
@@ -125,7 +107,7 @@ CONFIRM_BTN:    [153, 1150]
 X_BTN:          [540, 2075]
 ```
 
-Once the coordinates are in the config file, use `adb push MyPhone.yaml /storage/self/primary/AutoTraderConfig.yaml` to upload it.
+Once the coordinates are in the config file, use `adb push MyConfig.yaml /sdcard//AutoTraderConfig.yaml` to upload it.
 
 ## Usage
 
@@ -133,20 +115,41 @@ How to use the script when everything is ready.
 
 ### In-game preparation
 
-Create a tag with all the Pokémon to trade.
+Create a *#TAG* with all the Pokémon to trade.
 
-Start a trade manually and search for the tag.
-Complete the trade.
-The search query for the tag will now be remembered in the upcoming trades.
+IMPORTANT TIPS:
+
+1. For smoothest process, after creating custom *#TAG* full of Pokémon you intend to trade, filter out any pokemon that may be cause for additional animation during trade sequence. This mainly includes removing those that have been favorited, XXL, XXS, and Pokémon that have earned buddy hearts with the following PoGo search string `xxl, xxs, favorite, !buddy0` within *#TAG* and remove them before beginning trade.
+
+2. Complete your daily special trade(s) first.
+
+## Process
+
+1. Run Script (see section '## Running the script' below)
+
+2.  Select TARGET devices (if more than 2 are connected)
+
+3. Start a trade manually and search for the #TAG on both TARGET devices.
+
+   Tip: In order to maximize candy reward with 100Km+ caught distance utilize `& distance` search string.
+
+     *Example:*
+   
+     Device #1 `#TAG & distance9500` (Pokémon with #TAG & caught within a distance ≤ 9500Km.)
+       
+     Device #2 `#TAG & distance9600-` (Pokémon with #TAG & caught a distance ≥ 9600Km)
+
+4. Complete the first normal trade manually.
+
+    -The search query for the #TAG will now be remembered in the upcoming trades on both devices.
 
 ### Running the script
 
-Connect 2 phones to adb with the steps above.
+Connect 2 or more phones to adb with the steps above.
 
-Execute the script with
+Execute the script from project directory with:
 
-- `python trade.py` (Windows)
-- `./trade.py` (Linux/Mac)
+- `python poetry run trade` or simply `poetry run trade` depending on your Python setup.
 
 The script starts by checking for connected devices, then loads config files, and prompts the user with how many trades to perform, after which the trading begins.
 
@@ -159,6 +162,22 @@ If this fails, it can be turned off manually in **Settings > Developer options >
 #### Custom delay between taps
 
 Some devices and enviroments might experience more or less lag than what the default values are tailored for.
-When in the `Number of trades?` prompt, use the command `delay` to get and `delay <value>` to set the delay modifier.
-The value can be any floating point number, such as `3`, `3.5`, `0`, or even `-1` if you are feeling brave.
-By default, it only affects the **TRADE_BTN**, **NEXT_BTN**, and **CONFIRM_BTN** timings, since those are the ones that involve waiting for the game server.
+When in the `Number of trades?` prompt, the following commands may be used
+
+`delay` to get set <value> and `delay <value>` to set the delay modifier between steps in tap sequence.
+  The value can be any floating point number, such as `3`, `3.5`, `0`, or even `-1` (Default: 0)
+
+`offset` to get set <value> and `offset <value>` to set the stagger delay for taps between devices.
+  The value can be any positive floating point number or 0, such as `1`, `0.2`, `0` . (Default: 0.5)
+
+`switch` to re-select TARGET devices (in cases where more than 2 devices are connected).
+
+By default `delay` only affects the **TRADE_BTN**, **NEXT_BTN**, and **CONFIRM_BTN** timings, since those are the ones that involve waiting for the game server and `offset` affects all steps.
+
+### Additional Info
+
+  Flags `--delay` and `--offset` can be used to set respective values when first launching script.
+
+*Example:*
+    
+    `poetry run trade --delay 1.2 --offset 0.4`
