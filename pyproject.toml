@@ -1,0 +1,21 @@
+[project]
+name = "PogoAutoTrader"
+version = "0.1.0"
+description = "Automates Pokémon GO trading via ADB."
+authors = [
+    { name = "-ROCKET-", email = "blasting@offagain.com" }
+]
+readme = "README.md"
+requires-python = ">=3.12,<4.0"
+dependencies = [
+    "pure-python-adb-reborn>=0.3.0,<1.0.0",
+    "PyYAML>=6.0.3,<7.0.0",
+    "rich>=13.0.0,<14.0.0"
+]
+
+[project.scripts]
+trade = "script.trade:main"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
