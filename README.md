@@ -176,8 +176,8 @@ By default `delay` only affects the **TRADE_BTN**, **NEXT_BTN**, and **CONFIRM_B
 
 ### Additional Info
 
-  Flags `--delay` and `--offset` can be used to set respective values when first launching script.
+  Flags `--delay` and `--offset` can be used to assign respective values when first launching script.
 
 *Example:*
     
-    `poetry run trade --delay 1.2 --offset 0.4`
+   `poetry run trade --delay 1.2 --offset 0.4`
